@@ -1,0 +1,32 @@
+# Insatll proftpd server
+yum install -y proftpd
+ 
+# load kernel module
+modprobe ip_conntrack_ftp
+ 
+# add module to auto load
+cat << EOF > /etc/modules-load.d/ip_conntrack_ftp.conf
+ip_conntrack_ftp
+EOF
+ 
+# restart module service
+systemctl restart systemd-modules-load.service
+ 
+# open FTP ports in firewall
+iptables -I INPUT 6 -p tcp -m multiport --dports 20,21 -j ACCEPT
+iptables -I INPUT 6 -p udp -m multiport --dports 20,21 -j ACCEPT
+ 
+# check added rules
+iptables -L INPUT -vn
+ 
+# enable proftp autostart on system boot
+systemctl enable proftpd.service
+ 
+# start proftpd server
+systemctl start proftpd.service
+ 
+# add system user
+useradd ftpuser -d /home/ftp -s /sbin/nologin
+ 
+# set password for user ftpuser
+passwd ftpuser
